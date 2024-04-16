@@ -7,7 +7,7 @@ import {
 import { getNames } from "./get-names";
 import { isArray, isObject } from "./util";
 
-export default function JsonToTS(json: any, userOptions?: Options): string[] {
+export default function jsonToTs(json: any, userOptions?: Options): string[] {
   const defaultOptions: Options = {
     rootName: "RootObject",
     dedupe: true,
@@ -43,6 +43,7 @@ export default function JsonToTS(json: any, userOptions?: Options): string[] {
     (e)=> getTypeStringFromDescription(e, options)
   );
 }
-
-(<any>JsonToTS).default = JsonToTS;
-module.exports = JsonToTS;
+export {
+  Options,
+  jsonToTs
+}
