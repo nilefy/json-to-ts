@@ -68,9 +68,9 @@ describe("Multiple interfaces", function() {
       `interface HelloWorld {
   b: number;
 }`
-    ].map(_ => _.trim());
+    ].map(removeWhiteSpace);
 
-    const interfaces = JsonToTS(json);
+    const interfaces = JsonToTS(json).map(removeWhiteSpace);
     interfaces.forEach(typeInterface => {
       assert(expectedTypes.includes(typeInterface));
     });

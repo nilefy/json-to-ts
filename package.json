@@ -1,6 +1,6 @@
 {
   "name": "nilefy-json-to-ts",
-  "version": "1.8.2",
+  "version": "1.8.3",
   "description": "This is the fork of the original json-to-ts package, modified to fit in Nilefy",
   "keywords": [
     "typescript",

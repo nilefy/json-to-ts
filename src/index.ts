@@ -2,7 +2,7 @@ import { getTypeStructure, optimizeTypeStructure } from "./get-type-structure";
 import { Options } from "./model";
 import {
   getInterfaceDescriptions,
-  getInterfaceStringFromDescription
+  getTypeStringFromDescription
 } from "./get-interfaces";
 import { getNames } from "./get-names";
 import { isArray, isObject } from "./util";
@@ -37,13 +37,10 @@ export default function JsonToTS(json: any, userOptions?: Options): string[] {
    */
   optimizeTypeStructure(typeStructure);
 
-  const names = options.dedupe ? getNames(typeStructure, options.rootName) : [{
-    id: typeStructure.rootTypeId,
-    name: options.rootName
-  }];
+  const names = getNames(typeStructure, options.rootName)
 
   return getInterfaceDescriptions(typeStructure, names, options).map(
-    (e)=> getInterfaceStringFromDescription({...e, options})
+    (e)=> getTypeStringFromDescription(e, options)
   );
 }
 

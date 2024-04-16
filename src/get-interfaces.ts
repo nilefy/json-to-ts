@@ -12,12 +12,12 @@ function parseKeyMetaData(key: string): KeyMetaData {
   if (isOptional) {
     return {
       isOptional,
-      keyValue: key.slice(0, -3)
+      keyValue: key.slice(0, -3),
     };
   } else {
     return {
       isOptional,
-      keyValue: key
+      keyValue: key,
     };
   }
 }
@@ -50,7 +50,6 @@ function replaceTypeObjIdsWithNames(typeObj: { [index: string]: string }, names:
         if (!isHash(type)) {
           return [key, type, isOptional];
         }
-
         const newType = findNameById(type, names);
         return [key, newType, isOptional];
       })
@@ -81,33 +80,50 @@ function replaceTypeObjIdsWithNames(typeObj: { [index: string]: string }, names:
   );
 }
 
-export function getInterfaceStringFromDescription({ name, typeMap, options }: InterfaceDescription & {
-  options: Options;
-
-}): string {
-  if(options.named !== false && options.interfaceOrType === "interface"){
-  const stringTypeMap = Object.entries(typeMap)
-    .map(([key, name]) => `  ${key}: ${name};\n`)
-    .reduce((a, b) => (a += b), "");
-
-  let interfaceString = `interface ${name} {\n`;
-  interfaceString += stringTypeMap;
-  interfaceString += "}";
-  return interfaceString;
+const stringifyTypeMapRecursive = (typeMap: InterfaceDescription["typeMap"]): string => {
+  let res = "{\n";
+  for (const key in typeMap) {
+    let innerString = "";
+    if (typeof typeMap[key] === "string") {
+      innerString = typeMap[key];
+    } else {
+      innerString = stringifyTypeMapRecursive(typeMap[key]);
+    }
+    res += `${key}: ${innerString};\n`;
   }
+  res += "}";
+  return res;
+};
 
-  if(options.named === false){
-    // only one type
-  return JSON.stringify(typeMap, null, 2);
+export function getTypeStringFromDescription(args:{
+  name: string, typeMap?: InterfaceDescription["typeMap"], type?: string
+}, options: Options): string 
+ {
+  const { name, typeMap, type } = args;
+  const stringTypeMap = type || stringifyTypeMapRecursive(typeMap);
+  if (options.named !== false && options.interfaceOrType === "interface") {
+    let interfaceString = `interface ${name}`;
+    interfaceString += stringTypeMap;
+    return interfaceString;
+  }
+  if (options.named !== false && options.interfaceOrType === "type") {
+    let typeString = `type ${name} = `;
+    typeString += stringTypeMap;
+    return typeString;
+  }
+  if (options.named === false) {
+    return stringTypeMap;
   }
 }
 
-export function getInterfaceDescriptions(typeStructure: TypeStructure, names: NameEntry[], options:Options): InterfaceDescription[] {
-  if(options.dedupe){
-  return names
-    .map(({ id, name }) => {
+export function getInterfaceDescriptions(
+  typeStructure: TypeStructure,
+  names: NameEntry[],
+  options: Options
+) {
+  const res = names
+  .map(({ id, name }) => {
       const typeDescription = findTypeById(id, typeStructure.types);
-      
       if (typeDescription.typeObj) {
         const typeMap = replaceTypeObjIdsWithNames(typeDescription.typeObj, names);
         return { name, typeMap };
@@ -116,27 +132,47 @@ export function getInterfaceDescriptions(typeStructure: TypeStructure, names: Na
       }
     })
     .filter(_ => _ !== null);
-  }else {
-    // since dedupe is off, it'll be one big interface
-    const resType:InterfaceDescription = {
-      name : options.named ? options.rootName : "",
-      typeMap: {}
-    }
-    const rootId = typeStructure.rootTypeId;
-    const buildType = (id:string)=>{
-      const typeDescription = findTypeById(id, typeStructure.types);
-      const typeObj = typeDescription.typeObj;
-      const resTypeObj = {}
-      for(const key in typeObj){
-        if(isHash(typeObj[key])){
-          resTypeObj[key] = buildType(typeObj[key]);
-        }else{
-          resTypeObj[key] = typeObj[key];
-        }
-      }
-      return resTypeObj;      
-    }
-    resType.typeMap = buildType(rootId);
-    return [resType];
+  if(options.dedupe === false){
+    return dupe(res, options.rootName);
   }
+  return res;
 }
+
+const dupe = (InterfaceDescriptions: InterfaceDescription[], rootName: string) => {
+  // this is kinda hacky but I'm not about to rewrite the whole thing
+  const rootId = rootName;
+  const buildType = (id: string) => {
+    const typeDescription = InterfaceDescriptions.find((_) => _.name === id);
+    const typeMap = typeDescription.typeMap;
+    const resTypeMap = {};
+    for (const key in typeMap) {
+      if (typeof typeMap[key] === "string") {
+        let arrLength = 0;
+        const arrayMatch = typeMap[key].matchAll(/\[\]/g);
+        for (const _ of arrayMatch) {
+          arrLength++;
+        }
+        const isArray = arrLength > 0;
+        const stripFromArrayBrackets = typeMap[key].replace(/\[\]/g, "");
+        const stripFromBracketsAndSpaces = stripFromArrayBrackets.replace(/\s/g, "");
+        const found = InterfaceDescriptions.find((_) => _.name === stripFromBracketsAndSpaces);
+        if (found) {
+          if(isArray) {
+            resTypeMap[key] = `${buildType(stripFromBracketsAndSpaces)}${"[]".repeat(arrLength)}`;
+            continue;
+          }
+          resTypeMap[key] = buildType(stripFromBracketsAndSpaces);
+        } else {
+        resTypeMap[key] = typeMap[key];
+        }
+      } else {
+        resTypeMap[key] = buildType(typeMap[key]);
+      }
+    }
+    return stringifyTypeMapRecursive(resTypeMap);
+  };
+  return[{
+    name: rootName,
+    type: buildType(rootId)
+  }]
+};
