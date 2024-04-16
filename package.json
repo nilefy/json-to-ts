@@ -1,6 +1,6 @@
 {
   "name": "nilefy-json-to-ts",
-  "version": "1.8.1",
+  "version": "1.8.2",
   "description": "This is the fork of the original json-to-ts package, modified to fit in Nilefy",
   "keywords": [
     "typescript",
@@ -44,7 +44,6 @@
   "license": "ISC",
   "dependencies": {
     "hash.js": "^1.0.3",
-    "nodemon": "^3.1.0",
     "pluralize": "^3.1.0"
   },
   "devDependencies": {
@@ -54,6 +53,7 @@
     "copyfiles": "^2.4.1",
     "dts-bundle-generator": "^9.4.0",
     "mocha": "^6.1.4",
+    "nodemon": "^3.1.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.5",
     "vite": "^5.2.9",
