@@ -1,6 +1,6 @@
-import * as assert from "assert";
+import { assert, describe, it } from "vitest";
 import { removeWhiteSpace } from "./util/index";
-import JsonToTS from "../src/index";
+import JsonToTS from "../index";
 
 describe("Single interface", function() {
   it("should work with empty objects", function() {
@@ -55,7 +55,7 @@ interface RootObject {
   'hello world': number;
 }`;
     const actual = JsonToTS(json).pop();
-    assert.strictEqual(expected.trim(), actual.trim());
+    assert.strictEqual(expected.trim(), actual!.trim());
   });
 
   it("should work with multiple key words and optional fields", function() {
@@ -68,7 +68,7 @@ interface RootObject {
   'hello world'?: any;
 }`;
     const actual = JsonToTS(json).pop();
-    assert.strictEqual(expected.trim(), actual.trim());
+    assert.strictEqual(expected.trim(), actual!.trim());
   });
 
   it("should work with primitive types", function() {

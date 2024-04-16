@@ -1,6 +1,6 @@
-import * as assert from "assert";
 import { removeWhiteSpace } from "./util/index";
-import JsonToTS from "../src/index";
+import JsonToTS from "../index";
+import { assert, describe, it } from "vitest";
 
 describe("Array type merging", function() {
   it("should work with arrays with same inner types", function() {

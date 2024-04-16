@@ -32,9 +32,13 @@ export interface InterfaceDescription {
   typeMap: object;
 }
 
-export interface Options {
-  rootName: string;
-}
+export type Options = {
+  rootName?: string;
+  dedupe?: boolean;
+  named?: boolean;
+  interfaceOrType?: "interface" | "type";
+};
+
 
 export interface KeyMetaData {
   keyValue: string;

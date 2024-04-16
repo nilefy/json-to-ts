@@ -1,7 +1,7 @@
 {
-  "name": "json-to-ts",
-  "version": "1.7.0",
-  "description": "Convert json object to typescript interfaces",
+  "name": "nilefy-json-to-ts",
+  "version": "1.8.0",
+  "description": "This is the fork of the original json-to-ts package, modified to fit in Nilefy",
   "keywords": [
     "typescript",
     "ts",
@@ -11,34 +11,52 @@
     "lib",
     "types"
   ],
-  "types": "build/src/index.d.ts",
-  "main": "build/src/index.js",
+  "main": "./dist/nilefy-json-to-ts.cjs",
+  "module": "./dist/nilefy-json-to-ts.mjs",
+  "exports": {
+    ".": {
+      "require": "./dist/nilefy-json-to-ts.cjs",
+      "import": "./dist/nilefy-json-to-ts.mjs",
+      "types": "./dist/index.d.ts"
+    },
+    "./dist/": {
+      "import": "./dist/",
+      "require": "./dist/",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "types": "./dist/index.d.ts",
   "scripts": {
     "prepublish": "npm run build",
-    "build": "rm -rf ./build && tsc",
+    "build": "rm -rf ./build && tsc && vite build && dts-bundle-generator --config ./dts-bundle-generator.config.ts && copyfiles ./package.json build",
+    "build:test": "rm -rf ./build && tsc",
     "start": "nodemon -e ts -w src -x 'ts-node src/index.ts'",
-    "test": "npm run build && mocha ./test/js-integration/index.js && mocha ./build/test",
-    "test-reload": "nodemon -e ts -w test -w src -x 'npm test'"
+    "test": "vitest"
   },
   "author": "https://github.com/mariusalch",
   "repository": {
     "type": "git",
-    "url": "https://github.com/MariusAlch/json-to-ts.git"
+    "url": "https://github.com/nilefy/json-to-ts"
   },
   "bugs": {
-    "url": "https://github.com/MariusAlch/json-to-ts/issues"
+    "url": "https://github.com/nilefy/json-to-ts/issues"
   },
   "license": "ISC",
   "dependencies": {
-    "es7-shim": "^6.0.0",
     "hash.js": "^1.0.3",
+    "nodemon": "^3.1.0",
     "pluralize": "^3.1.0"
   },
   "devDependencies": {
     "@types/mocha": "2.2.40",
     "@types/node": "^7.0.12",
     "@types/pluralize": "^0.0.27",
+    "copyfiles": "^2.4.1",
+    "dts-bundle-generator": "^9.4.0",
     "mocha": "^6.1.4",
-    "typescript": "^3.8.3"
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.5",
+    "vite": "^5.2.9",
+    "vitest": "^1.5.0"
   }
 }

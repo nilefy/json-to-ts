@@ -1,6 +1,6 @@
-import * as assert from "assert";
+import { assert, describe, it } from "vitest";
 import { removeWhiteSpace } from "./util/index";
-import JsonToTS from "../src/index";
+import JsonToTS from "../index";
 
 describe("Root array type", function() {
   it("should throw error on unsupprted array types", function() {

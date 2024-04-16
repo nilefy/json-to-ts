@@ -1,4 +1,4 @@
-import { InterfaceDescription, NameEntry, TypeStructure, KeyMetaData } from "./model";
+import { InterfaceDescription, NameEntry, TypeStructure, KeyMetaData, Options } from "./model";
 import { isHash, findTypeById, isNonArrayUnion } from "./util";
 
 function isKeyNameValid(keyName: string) {
@@ -81,7 +81,11 @@ function replaceTypeObjIdsWithNames(typeObj: { [index: string]: string }, names:
   );
 }
 
-export function getInterfaceStringFromDescription({ name, typeMap }: InterfaceDescription): string {
+export function getInterfaceStringFromDescription({ name, typeMap, options }: InterfaceDescription & {
+  options: Options;
+
+}): string {
+  if(options.named !== false && options.interfaceOrType === "interface"){
   const stringTypeMap = Object.entries(typeMap)
     .map(([key, name]) => `  ${key}: ${name};\n`)
     .reduce((a, b) => (a += b), "");
@@ -89,15 +93,21 @@ export function getInterfaceStringFromDescription({ name, typeMap }: InterfaceDe
   let interfaceString = `interface ${name} {\n`;
   interfaceString += stringTypeMap;
   interfaceString += "}";
-
   return interfaceString;
+  }
+
+  if(options.named === false){
+    // only one type
+  return JSON.stringify(typeMap, null, 2);
+  }
 }
 
-export function getInterfaceDescriptions(typeStructure: TypeStructure, names: NameEntry[]): InterfaceDescription[] {
+export function getInterfaceDescriptions(typeStructure: TypeStructure, names: NameEntry[], options:Options): InterfaceDescription[] {
+  if(options.dedupe){
   return names
     .map(({ id, name }) => {
       const typeDescription = findTypeById(id, typeStructure.types);
-
+      
       if (typeDescription.typeObj) {
         const typeMap = replaceTypeObjIdsWithNames(typeDescription.typeObj, names);
         return { name, typeMap };
@@ -106,4 +116,27 @@ export function getInterfaceDescriptions(typeStructure: TypeStructure, names: Na
       }
     })
     .filter(_ => _ !== null);
+  }else {
+    // since dedupe is off, it'll be one big interface
+    const resType:InterfaceDescription = {
+      name : options.named ? options.rootName : "",
+      typeMap: {}
+    }
+    const rootId = typeStructure.rootTypeId;
+    const buildType = (id:string)=>{
+      const typeDescription = findTypeById(id, typeStructure.types);
+      const typeObj = typeDescription.typeObj;
+      const resTypeObj = {}
+      for(const key in typeObj){
+        if(isHash(typeObj[key])){
+          resTypeObj[key] = buildType(typeObj[key]);
+        }else{
+          resTypeObj[key] = typeObj[key];
+        }
+      }
+      return resTypeObj;      
+    }
+    resType.typeMap = buildType(rootId);
+    return [resType];
+  }
 }
