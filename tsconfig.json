@@ -16,12 +16,11 @@
       "ESNext",
       "DOM"
     ],
-    "moduleResolution": "Node",
     "strict": false,
     "sourceMap": true,
-    "resolveJsonModule": true,
     "esModuleInterop": true,
     "noEmit": true,
+    "moduleResolution": "Bundler",
     "forceConsistentCasingInFileNames": true,
     "types": [
       "vite/client",

@@ -1,11 +1,11 @@
 import { getTypeStructure, optimizeTypeStructure } from "./get-type-structure";
-import { Options } from "./model";
 import {
   getInterfaceDescriptions,
   getTypeStringFromDescription
 } from "./get-interfaces";
 import { getNames } from "./get-names";
 import { isArray, isObject } from "./util";
+import { Options } from "./model";
 
 export default function jsonToTs(json: any, userOptions?: Options): string[] {
   const defaultOptions: Options = {
@@ -44,6 +44,5 @@ export default function jsonToTs(json: any, userOptions?: Options): string[] {
   );
 }
 export {
-  Options,
   jsonToTs
 }
